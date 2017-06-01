@@ -3,16 +3,11 @@ const moment = require('moment')
 const app = express()
 
 var oDate = new Date();
-var jsonDate = {};
-jsonDate.humenDate = oDate.getDate();
-jsonDate.unixDate = 123321123;
-
 app.get('/:date', function (req, res) {
   var resJson = {
     date:null,
     unix:null
   }
-  //res.send(JSON.stringify(jsonDate));
   if (moment(req.params.date, "DD-MM-YYYY", true).isValid()){ //we have a humen date detected
     resJson.date = req.params.date;
     var hDate =  moment(req.params.date, "DD-MM-YYYY");
