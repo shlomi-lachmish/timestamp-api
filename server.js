@@ -1,9 +1,12 @@
 const express = require('express')
 const moment = require('moment')
 const app = express()
+// const os = require( 'os' );
+// var networkInterfaces = os.networkInterfaces( );
+// console.log( networkInterfaces );
 
 var oDate = new Date();
-app.get('/:date', function (req, res) {
+app.get('/date/:date', function (req, res) {
   var resJson = {
     date:null,
     unix:null
@@ -23,6 +26,22 @@ app.get('/:date', function (req, res) {
     resJson.date = hTime;
   }
   res.send(resJson);
+})
+var jsonIP = {
+  "ip":"",
+  "lang":"",
+  "software":""
+}
+app.get('/whoami', function(req, res){
+  var arrIP = req.connection.remoteAddress.split(":");
+  if (arrIP.length>2){
+    jsonIP.ip=arrIP[3];
+  }else{
+    jsonIP.ip=req.connection.remoteAddress;
+  }
+  jsonIP.lang=req.acceptsLanguages()[0];
+  jsonIP.software=req.headers["user-agent"];
+  res.send(jsonIP);
 })
 
 app.listen(process.env.PORT, function () {
