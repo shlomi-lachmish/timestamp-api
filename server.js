@@ -1,3 +1,7 @@
+var apiKey = "AIzaSyAAXAiJ5WgWHoaxL1QG9E1w9dJLA6eH1MQ";
+var searchID ="008182633033430538347:isqigawv_v8";
+const GoogleImages = require('google-images'); 
+const client = new GoogleImages(searchID, apiKey);
 const express = require('express')
 const moment = require('moment')
 const app = express()
@@ -9,7 +13,9 @@ var url = "mongodb://localhost:27017/mydb";
 var query = {"name": "seq_id"  };
 //var newvalues = { "address": 1, "name":"seq_id"  };
 var seq;
-
+// MongoClient.connect(url, function(err, db) {
+//   db.createCollection("searchLog");
+// });
 //insert
 // MongoClient.connect(url, function(err, db) {
 //   if (err) throw err;
@@ -67,6 +73,57 @@ var jsonIP = {
   "lang":"",
   "software":""
 }
+function sendSearchTermToLog(queryStr){
+  //insert
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    var myobj = { query: queryStr, when: Date.now() };
+    db.collection("searchLog").insertOne(myobj, function(err, res) {
+      if (err) throw err;
+      console.log("1 record inserted");
+      db.close();
+    });
+  });
+}
+app.get('/imageSearch/:query',function(req, res) {
+  //save req.params.query to mongos 
+    sendSearchTermToLog(req.params.query);
+    client.search(req.params.query, {page: 2})
+    .then(images => {
+        console.log(images.length);
+        res.send(images);
+        // [{
+        //     "url": "http://steveangello.com/boss.jpg",
+        //     "type": "image/jpeg",
+        //     "width": 1024,
+        //     "height": 768,
+        //     "size": 102451,
+        //     "thumbnail": {
+        //         "url": "http://steveangello.com/thumbnail.jpg",
+        //         "width": 512,
+        //         "height": 512
+        //     }
+        // }]
+         
+    });
+})
+app.get('/imageSearchTerms',function(req, res) {
+    //guery last 10 search terms
+    console.log("hihi");
+    MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    
+    db.collection("searchLog").find().toArray(function(err, result) {
+      if (err) throw err;
+      // if (qur){
+      //   //seq=result;
+      // }
+      res.send(result);
+      db.close();
+    });
+  
+  });
+})
 app.get('/whoami', function(req, res){
   var arrIP = req.connection.remoteAddress.split(":");
   if (arrIP.length>2){
