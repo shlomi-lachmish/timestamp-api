@@ -3,8 +3,24 @@ var searchID ="008182633033430538347:isqigawv_v8";
 const GoogleImages = require('google-images'); 
 const client = new GoogleImages(searchID, apiKey);
 const express = require('express')
+var multer  = require('multer')
+//var upload = multer({ dest: './uploads/' })
+var storage = multer.diskStorage({
+        destination: function(req, file, cb) {
+            cb(null, './uploads/'); // Make sure this folder exists
+        },
+        filename: function(req, file, cb) {
+            var ext = file.originalname.split('.').pop();
+            cb(null, file.fieldname + '-' + Date.now() + '.' + ext);
+        }
+    });
+var upload = multer({ storage: storage }).single('upl');
+
+
+
 const moment = require('moment')
 const app = express()
+app.use(upload);
 // const os = require( 'os' );
 // var networkInterfaces = os.networkInterfaces( );
 // console.log( networkInterfaces );
@@ -148,7 +164,20 @@ app.get('/runSurl/:seq', function(req, res) {
     });
   
   });
-})
+});
+app.get('/uploadFile' ,function(req, res) {
+    console.log("Im here");
+    res.sendFile(__dirname + "/" + 'file.html' );
+    
+}) ;
+// app.post('/uploadFile', upload, function (req, res, next) {
+//   console.log("hihi, I'm in the file " + req.file);// is the `avatar` file 
+//   console.log('body:', req.avatar);
+//   // req.body will hold the text fields, if there were any 
+// })
+app.post("/uploadFile",upload,function(req,res,next){
+res.json({"Uploaded Successfull with file size" : req.file.size});
+});
 app.get('/surl/:urlProtocol//:urlStr', function(req, res) {
     MongoClient.connect(url, function(err, db) {
       if (err) throw err;
